@@ -1,4 +1,6 @@
-points/
+# I/O pointcloud files
+*.ply
+*.pcd
 
 ### MATLAB ###
 # Windows default autosave extension
