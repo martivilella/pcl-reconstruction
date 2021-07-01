@@ -11,7 +11,7 @@ pclid = pad(string(start_pcl-1),4,'left','0');
 pcl = pcdenoise(pcread(pclid+'.pcd'));
 pcl_down = pcdownsample(pcl, 'gridAverage', 0.005);
 absPose = rigid3d;
-vSet = addView(vSet, start_pcl, absPose, 'PointCloud', pcl_down);
+vSet = addView(vSet, start_pcl, absPose, 'PointCloud', pcl);
 fixed = pcl_down;
 
 % iterate over rest of points
@@ -25,7 +25,7 @@ for i=(start_pcl+1):size_pcl
     % pairwise registration
     relPose = icp_method(moving, fixed);
     absPose = rigid3d(absPose.T*relPose.T);
-    vSet = addView(vSet, i, absPose, 'PointCloud', pcl_down);
+    vSet = addView(vSet, i, absPose, 'PointCloud', pcl);
     vSet = addConnection(vSet, (i-1), i, relPose);
     
     % update vars for next pair
@@ -36,8 +36,8 @@ end
 for i=start_pcl:size_pcl
     for j=start_pcl:size_pcl
         if abs(i-j)>1 % if they are not neighbours (or the same)
-            fixed = vSet.Views.PointCloud(i-start_pcl+1);
-            moving = vSet.Views.PointCloud(j-start_pcl+1);
+            fixed = pcdownsample(vSet.Views.PointCloud(i-start_pcl+1), 'gridAverage', 0.005);
+            moving = pcdownsample(vSet.Views.PointCloud(j-start_pcl+1), 'gridAverage', 0.005);
             descriptor1 = scanContextDescriptor(fixed);
             descriptor2 = scanContextDescriptor(moving);
             dist = scanContextDistance(descriptor1, descriptor2);
