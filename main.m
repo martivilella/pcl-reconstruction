@@ -4,11 +4,12 @@
 vSet = pcviewset;
 start_pcl = 450; % if idx=0, set to 1
 size_pcl = 499; %499 (0+498)
+ext = '.pcd';
 
 %% Import, Downsample, Pairwise registration
 % initial pcl
 pclid = pad(string(start_pcl-1),4,'left','0');
-pcl = pcdenoise(pcread(pclid+'.pcd'));
+pcl = pcdenoise(pcread(pclid+ext));
 pcl_down = pcdownsample(pcl, 'gridAverage', 0.005);
 absPose = rigid3d;
 vSet = addView(vSet, start_pcl, absPose, 'PointCloud', pcl);
@@ -18,7 +19,7 @@ fixed = pcl_down;
 for i=(start_pcl+1):size_pcl
     % load moving (next) pcl
     pclid = pad(string(i-1),4,'left','0');
-    pcl = pcdenoise(pcread(pclid+'.pcd'));
+    pcl = pcdenoise(pcread(pclid+ext));
     pcl_down = pcdownsample(pcl, 'gridAverage', 0.005);
     moving = pcl_down;
     
@@ -62,6 +63,9 @@ ptCloudMap = pcalign(vSetOptim.Views.PointCloud, vSetOptim.Views.AbsolutePose, g
 
 %% Show map
 pcshow(ptCloudMap)
+
+%% Write to file
+pcwrite(ptCloudMap,'OUTreconstructedScene'+ext)
 
 %% Defs
 
