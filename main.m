@@ -3,7 +3,7 @@
 %% Global vars
 vSet = pcviewset;
 start_pcl = 450; % if idx=0, set to 1
-size_pcl = 499; %499 (0+498)
+end_pcl = 499; %499 (0+498)
 ext = '.pcd';
 
 %% Import, Downsample, Pairwise registration
@@ -16,7 +16,7 @@ vSet = addView(vSet, start_pcl, absPose, 'PointCloud', pcl);
 fixed = pcl_down;
 
 % iterate over rest of points
-for i=(start_pcl+1):size_pcl
+for i=(start_pcl+1):end_pcl
     % load moving (next) pcl
     pclid = pad(string(i-1),4,'left','0');
     pcl = pcdenoise(pcread(pclid+ext));
@@ -34,8 +34,8 @@ for i=(start_pcl+1):size_pcl
 end
 
 %% Global Loop Closure connectors using ContextDescriptors
-for i=start_pcl:size_pcl
-    for j=start_pcl:size_pcl
+for i=start_pcl:end_pcl
+    for j=start_pcl:end_pcl
         if abs(i-j)>1 % if they are not neighbours (or the same)
             fixed = pcdownsample(vSet.Views.PointCloud(i-start_pcl+1), 'gridAverage', 0.005);
             moving = pcdownsample(vSet.Views.PointCloud(j-start_pcl+1), 'gridAverage', 0.005);
