@@ -2,25 +2,26 @@
 
 %% Global vars
 vSet = pcviewset;
-start_pcl = 450; % if idx=0, set to 1
-end_pcl = 499; %499 (0+498)
+start_pcl = 1; % filename idx number, 1-based (0000 file not supported)
+end_pcl = 100;
 ext = '.pcd';
 
 %% Import, Downsample, Pairwise registration
 % initial pcl
-pclid = pad(string(start_pcl-1),4,'left','0');
-pcl = pcdenoise(pcread(pclid+ext));
-pcl_down = pcdownsample(pcl, 'gridAverage', 0.005);
+pclid = pad(string(start_pcl),4,'left','0'); % use 1-based index for compatibility with viewId in pcviewset
+pcl = pcdenoise(pcread(strcat(pclid,ext)));
+pcl_down = pcdownsample(pcl, 'gridAverage', 0.01);
 absPose = rigid3d;
 vSet = addView(vSet, start_pcl, absPose, 'PointCloud', pcl);
 fixed = pcl_down;
 
 % iterate over rest of points
 for i=(start_pcl+1):end_pcl
+    fprintf('Propagating odometry on idx %i\n', i)
     % load moving (next) pcl
-    pclid = pad(string(i-1),4,'left','0');
-    pcl = pcdenoise(pcread(pclid+ext));
-    pcl_down = pcdownsample(pcl, 'gridAverage', 0.005);
+    pclid = pad(string(i),4,'left','0');
+    pcl = pcdenoise(pcread(strcat(pclid,ext)));
+    pcl_down = pcdownsample(pcl, 'gridAverage', 0.01);
     moving = pcl_down;
     
     % pairwise registration
@@ -37,8 +38,8 @@ end
 for i=start_pcl:end_pcl
     for j=start_pcl:end_pcl
         if abs(i-j)>1 % if they are not neighbours (or the same)
-            fixed = pcdownsample(vSet.Views.PointCloud(i-start_pcl+1), 'gridAverage', 0.005);
-            moving = pcdownsample(vSet.Views.PointCloud(j-start_pcl+1), 'gridAverage', 0.005);
+            fixed = pcdownsample(vSet.Views.PointCloud(i-start_pcl+1), 'gridAverage', 0.01);
+            moving = pcdownsample(vSet.Views.PointCloud(j-start_pcl+1), 'gridAverage', 0.01);
             descriptor1 = scanContextDescriptor(fixed);
             descriptor2 = scanContextDescriptor(moving);
             dist = scanContextDistance(descriptor1, descriptor2);
@@ -58,14 +59,14 @@ end
 vSetOptim = optimizePoses(vSet);
 
 %% Assemble map
-gridStep = 0.01;
+gridStep = 0.001;
 ptCloudMap = pcalign(vSetOptim.Views.PointCloud, vSetOptim.Views.AbsolutePose, gridStep);
 
 %% Show map
 pcshow(ptCloudMap)
 
 %% Write to file
-pcwrite(ptCloudMap,'OUTreconstructedScene'+ext)
+pcwrite(ptCloudMap, strcat('OUTreconstructedScene', ext))
 
 %% Defs
 

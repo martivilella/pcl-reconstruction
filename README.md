@@ -9,7 +9,8 @@ Straight-forward modular scene reconstruction script, that processes a range of 
 
 
 # Usage
-- Input point cloud files exprected to follow the naming convention `0000.pcd`, padding low indices with leading `0`s.
+- Input point cloud files expected to follow the 1-based naming convention `0001.pcd`, padding low indices with leading `0`s.
 - Add point cloud files in the MATLAB path.
 - Set range of file indices to process on begin of `main.m`.
-- Set `ext` string on begin of `main.m` to `'.ply'` or `'.pcd'` to appropiate input file format.
+- Set `ext` string on begin of `main.m` to `'.ply'` or `'.pcd'` to appropriate input file format.
+- Can optionally change the resolution (`gridStep`) of the reconstructed point cloud during map assembly.
